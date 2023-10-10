@@ -31,5 +31,20 @@ def get_image(image_name):
     filen = IMAGE_FOLDER + image_name 
     return send_from_directory(IMAGE_FOLDER, image_name)
 
+@app.route('/api/upload', methods=['POST'])
+@cross_origin()
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if file:
+        file.save(os.path.join('static/uploads', file.filename))
+        return jsonify({'message': 'File uploaded successfully'})
+
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)
