@@ -65,6 +65,9 @@ def detect_boxes(image_path):
     conf_threshold = 0.5
     nms_threshold = 0.4
 
+    # Use annotations to store the bounding boxes information 
+    annotations = []
+
     # for each detetion from each output layer 
     # get the confidence, class id, bounding box params
     # and ignore weak detections (confidence < 0.5)
@@ -96,8 +99,22 @@ def detect_boxes(image_path):
         y = box[1]
         w = box[2]
         h = box[3]
+
+        label = str(classes[class_ids[i]])
+
+        annotation = {
+            'label': label,
+            'coordinates': {
+                'x': int(x),
+                'y': int(y),
+                'width': int(w),
+                'height': int(h)
+            }
+        }
+
+        annotations.append(annotation)
         
-        draw_bounding_box(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), classes, COLORS)
+        # draw_bounding_box(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), classes, COLORS)
 
     # display output image    
     # cv2.imshow("object detection", image)
@@ -111,6 +128,8 @@ def detect_boxes(image_path):
     # release resources
     # cv2.destroyAllWindows()
     
-    return image
+    return annotations
 
-detect_boxes("static/uploads/ppCV.jpg")
+
+result = detect_boxes("static/uploads/ppCV.jpg")
+print(result)

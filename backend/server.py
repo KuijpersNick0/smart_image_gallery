@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory, request, redirect, url_for,  render_template
+from flask import Flask, jsonify, send_from_directory, request, send_file
 from flask_cors import CORS, cross_origin
 import os, sys 
 import urllib.request 
@@ -6,6 +6,7 @@ from detection import detect_boxes
 import cv2 
 import numpy as np
 import base64
+import io
 
 
 # app instance
@@ -46,23 +47,19 @@ def upload_image():
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
+    # if file and allowed_file(file.filename):
     if file:
         file.save(os.path.join('static/uploads', file.filename))
         return jsonify({'message': 'File uploaded successfully'})
 
 
-@app.route("/api/detect-boxes/<path:image_name>", methods=['GET'])
+@app.route('/api/detect-boxes/<path:image_name>', methods=['GET'])
 @cross_origin()
-def detect_boxes(image_name):
-    # PAS OUF DE PASSER L IMAGE COMME ça
-    # faut trouver une autre solution
-    image_data = detect_boxes(os.path.join(IMAGE_FOLDER, image_name))
+def detect_boxes_route(image_name):
+    image_path = os.path.join(IMAGE_FOLDER, image_name)
+    annotations = detect_boxes(image_path)
     
-    _, buffer = cv2.imencode('.jpg', image_data)
-    image_base64 = base64.b64encode(buffer).decode('utf-8')
-
-    return jsonify(image_base64)
-
+    return jsonify({'annotations': annotations})
 
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)
