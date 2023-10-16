@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; 
-
+import Modal from './Modal'; 
 
 const GalleryImages = () => {
   const [imageList, setImageList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [annotations, setAnnotations] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const [selectedAnnotations, setSelectedAnnotations] = useState(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   // API call to fetch image list
   const fetchImageList = async () => {
@@ -62,14 +66,29 @@ const GalleryImages = () => {
     const fetchAnnotations = async () => {
       const annotationsPromises = imageList.map((imageName) => handleDetectBoxes(imageName));
       const annotationsData = await Promise.all(annotationsPromises);
+      console.log('Fetched Annotations:', annotationsData); // Log the fetched annotations
       setAnnotations(annotationsData);
     };
 
     fetchAnnotations();
   }, [imageList]);
   
+  // Show for the selected image the bounding boxes and put the focus on it
   const handleImageClick = (imageName) => {
     setSelectedImage(imageName);
+    // Find selected annotations from the state
+    const selectedAnno = annotations.find((anno) => anno.image === imageName);
+    // Set selected annotations in the state
+    console.log('Annotations for', imageName, ':', annotations.find((anno) => anno.image === imageName));
+    setSelectedAnnotations(selectedAnno);
+
+    setModalVisible(true);
+  };
+
+  // Close the focus
+  const closeModal = () => {
+    setSelectedImage(null);
+    setModalVisible(false);
   };
 
   const drawRectangles = (ctx, annotations) => {
@@ -119,8 +138,6 @@ const GalleryImages = () => {
     }
   }, [selectedImage, annotations]);
 
-  // AAAAAAAAAAAAAAAAAAAAAAAAA
-
   return (
     <div>
       <h2>Image Gallery</h2>
@@ -152,10 +169,16 @@ const GalleryImages = () => {
         <input type="file" onChange={handleFileChange} />
         <button onClick={handleUpload}>Upload</button>
       </div>
+      {modalVisible && (
+        <Modal
+          imageUrl={`http://localhost:8080/api/images/${selectedImage}`}
+          annotations={selectedAnnotations && selectedAnnotations.annotations}
+          onClose={closeModal}
+      />
+      )}
     </div>
   );
 };
-
-// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ 
 
 export default GalleryImages;
