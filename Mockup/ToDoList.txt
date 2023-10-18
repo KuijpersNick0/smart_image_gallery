@@ -1,0 +1,8 @@
+To do AI project :
+
+- Comprendre pourquoi bouton upload est tlmt lent
+- Fichier JSON avec annotation => permet d'aller plus vite => pas recalculer à chaque fois => lookup json file
+- Key JSON ? Nom image ou index ou random key ?
+- Enlever dessin sur image qui sont pas Modal
+- Check (filter, user input verification) input image front et back
+- Controler taille image 

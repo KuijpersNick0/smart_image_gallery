@@ -7,8 +7,8 @@ const Modal = ({ imageUrl, annotations, onClose }) => {
   useEffect(() => { 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    console.log('debug', annotations);
-    console.log('Modal useEffect fired');
+    // console.log('debug', annotations);
+    // console.log('Modal useEffect fired');
 
     const img = new Image();
     img.src = imageUrl;
@@ -25,10 +25,10 @@ const Modal = ({ imageUrl, annotations, onClose }) => {
 
   const drawRectangles = (ctx, annotations) => { 
     annotations.forEach((annotation) => { 
-        console.log('Drawing annotation:', annotation);
+        // console.log('Drawing annotation:', annotation);
         const { coordinates, label } = annotation;
         const { height, width, x, y } = coordinates;
-        console.log('Drawing rectangle:', x, y, width, height, label);
+        // console.log('Drawing rectangle:', x, y, width, height, label);
         // Draw the bounding box
         ctx.beginPath();
         ctx.rect(x, y, width, height);

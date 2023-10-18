@@ -131,5 +131,5 @@ def detect_boxes(image_path):
     return annotations
 
 
-result = detect_boxes("static/uploads/ppCV.jpg")
-print(result)
+# result = detect_boxes("static/uploads/ppCV.jpg")
+# print(result)
