@@ -11,7 +11,9 @@ def get_output_layers(net):
     layer_names = net.getLayerNames()
     
     # output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    output_layers = [layer_names[i-1] for i in net.getUnconnectedOutLayers()]
+    # output_layers = [layer_names[i-1] for i in net.getUnconnectedOutLayers()]
+    # api changes
+    output_layers = net.getUnconnectedOutLayersNames() 
 
     return output_layers
 
@@ -93,7 +95,8 @@ def detect_boxes(image_path):
     # go through the detections remaining
     # after nms and draw bounding box
     for i in indices:
-        # i = i[0]
+        # api changes
+        i = i[0]
         box = boxes[i]
         x = box[0]
         y = box[1]

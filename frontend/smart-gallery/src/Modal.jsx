@@ -1,29 +1,37 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './styles/style.css';
+import Loading from './Loading';
 
-const Modal = ({ imageUrl, annotations, onClose }) => {
-  const canvasRef = useRef(null);
-    
+const Modal = ({ imageUrl, annotations, onClose, loading}) => {
+  const canvasRef = useRef(null); 
+  const [error, setError] = useState(false);
+
   useEffect(() => { 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    // console.log('debug', annotations);
-    // console.log('Modal useEffect fired');
+    if (!canvas) {
+      return;
+    }
+    const ctx = canvas.getContext('2d'); 
 
     const img = new Image();
     img.src = imageUrl;
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      if (annotations) { 
-        drawRectangles(ctx, annotations);
-      }
+      try {
+        ctx.drawImage(img, 0, 0, img.width, img.height); 
+        if (annotations && annotations.length > 0) {  
+          drawRectangles(ctx, annotations);
+        } 
+      } catch (error) {
+        setError(true);
+        console.error('Error drawing on canvas:', error);
+      } 
     };
   }, [imageUrl, annotations]);
 
-  const drawRectangles = (ctx, annotations) => { 
+  const drawRectangles = (ctx, annotations) => {  
     annotations.forEach((annotation) => { 
         // console.log('Drawing annotation:', annotation);
         const { coordinates, label } = annotation;
@@ -45,11 +53,13 @@ const Modal = ({ imageUrl, annotations, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <canvas ref={canvasRef} />
-        <button onClick={onClose}>Close</button>
-      </div>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {loading && <Loading text="Fetching annotation..." />}
+      {error && <div>Error loading image</div>}
+      {!loading && !error && <canvas ref={canvasRef} />}
+      <button onClick={onClose}>Close</button>
     </div>
+  </div>
   );
 };
 

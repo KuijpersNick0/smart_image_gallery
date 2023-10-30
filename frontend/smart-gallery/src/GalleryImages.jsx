@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; 
+
 import Modal from './Modal'; 
+import Loading from './Loading';
 
 const GalleryImages = () => {
   const [imageList, setImageList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  // State to store the annotations for all images
   const [annotations, setAnnotations] = useState([]);
+  // State to store the selected image name
   const [selectedImage, setSelectedImage] = useState(null);
-
+  // State to store the annotations for the selected image
   const [selectedAnnotations, setSelectedAnnotations] = useState(null);
-
+  // Modal state, focus on the image
   const [modalVisible, setModalVisible] = useState(false);
+  // Loading state when annotations or images are being fetched 
+  const [loadingImages, setLoadingImages] = useState(true); 
+  const [loadingAnnotations, setAnnotationsLoading] = useState(true);
+  
+  // Fetch image list when the component mounts
+  useEffect(() => {
+    fetchImageList();
+  }, []);
 
   // API call to fetch image list
   const fetchImageList = async () => {
@@ -19,13 +31,10 @@ const GalleryImages = () => {
       setImageList(response.data);
     } catch (error) {
       console.error('Error fetching image list:', error);
+    } finally {
+      setLoadingImages(false);
     }
   };
-
-  // Fetch image list when the component mounts
-  useEffect(() => {
-    fetchImageList();
-  }, []);
 
   // Handle file upload event
   const handleFileChange = (event) => {
@@ -48,40 +57,40 @@ const GalleryImages = () => {
     }
   };
 
-    // API call to detect boxes
+  // API call to detect boxes
   const handleDetectBoxes = async (imageName) => {
     try {
       const response = await axios.get(`http://localhost:8080/api/detect-boxes/${imageName}`);
-      console.log('Response for', imageName, ':', response.data); 
+      // console.log('Response for', imageName, ':', response.data); 
       // Ensure the annotations are associated with the correct image name
       return { image: imageName, annotations: response.data.annotations || [] };
     } catch (error) {
       console.error('Error detecting boxes:', error);
       return { image: imageName, annotations: [] };
-    }
+    }  
   };
 
   // Fetch annotations when the component mounts or imageList changes
   useEffect(() => {
     const fetchAnnotations = async () => {
-      const annotationsPromises = imageList.map((imageName) => handleDetectBoxes(imageName));
-      const annotationsData = await Promise.all(annotationsPromises);
-      console.log('Fetched Annotations:', annotationsData); // Log the fetched annotations
-      setAnnotations(annotationsData);
+      setAnnotationsLoading(true);
+      try {
+        const annotationsPromises = imageList.map((imageName) => handleDetectBoxes(imageName));
+        const annotationsData = await Promise.all(annotationsPromises);
+        // console.log('Fetched Annotations GalleryImages.jsx:', annotationsData); 
+        setAnnotations(annotationsData);
+      } catch (error) {
+        // console.error('Error fetching annotations:', error);
+      } finally {
+        setAnnotationsLoading(false); 
+      }
     };
-
     fetchAnnotations();
   }, [imageList]);
   
   // Show for the selected image the bounding boxes and put the focus on it
   const handleImageClick = (imageName) => {
     setSelectedImage(imageName);
-    // Find selected annotations from the state
-    const selectedAnno = annotations.find((anno) => anno.image === imageName);
-    // Set selected annotations in the state
-    console.log('Annotations for', imageName, ':', annotations.find((anno) => anno.image === imageName));
-    setSelectedAnnotations(selectedAnno);
-
     setModalVisible(true);
   };
 
@@ -91,79 +100,32 @@ const GalleryImages = () => {
     setModalVisible(false);
   };
 
-  const drawRectangles = (ctx, annotations) => {
-    annotations.forEach((annotation) => {
-      const { x, y, width, height } = annotation.coordinates;
-      const label = annotation.label;
-  
-      // Draw the bounding box
-      ctx.beginPath();
-      ctx.rect(x, y, width, height);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#FF0000';
-      ctx.stroke();
-  
-      // Draw the label
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#FF0000';
-      ctx.fillText(label, x, y - 5);
-    });
-  };
-
-  const handleCanvasDraw = () => {
-    const canvas = document.getElementById('canvas'); 
-    const ctx = canvas.getContext('2d'); 
-    const selectedAnnotations = annotations.find((anno) => anno.image === selectedImage);
-    
-    // console.log('Selected Image:', selectedImage);
-    // console.log('Selected Annotations:', selectedAnnotations);
-
-    if (ctx && selectedAnnotations && selectedAnnotations.annotations) { 
-      const img = new Image();
-      img.src = `http://localhost:8080/api/images/${selectedImage}`;
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.canvas.width = img.width; // Set canvas width
-        ctx.canvas.height = img.height; // Set canvas height
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-
-        drawRectangles(ctx, selectedAnnotations.annotations);
-      };
-    }
-  };
-
   useEffect(() => {
-    if (selectedImage) {
-      handleCanvasDraw();
-    }
-  }, [selectedImage, annotations]);
+    // Find selected annotations from the state
+    const selectedAnno = annotations.find((anno) => anno.image === selectedImage);
+    // Set selected annotations in the state
+    setSelectedAnnotations(selectedAnno);
+  }, [annotations, selectedImage]);
 
   return (
-    <div>
+<div>
       <h2>Image Gallery</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {imageList.map((imageName, index) => (
-         <div key={imageName} style={{ margin: '10px', position: 'relative' }}>
-            <img
-              src={`http://localhost:8080/api/images/${imageName}`}
-              alt={imageName}
-              style={{ width: '150px', cursor: 'pointer' }}
-              onClick={() => handleImageClick(imageName)}
-            />
-            {selectedImage === imageName && (
-              <canvas
-                id="canvas"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  pointerEvents: 'none', // Allow click-through to the image
-                }}
+      {loadingImages ? (
+        <Loading text="Fetching images..." />
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {imageList.map((imageName, index) => (
+            <div key={imageName} style={{ margin: '10px', position: 'relative' }}>
+              <img
+                src={`http://localhost:8080/api/images/${imageName}`}
+                alt={imageName}
+                style={{ width: '150px', cursor: 'pointer' }}
+                onClick={() => handleImageClick(imageName)}
               />
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div>
         <h3>Upload New Image</h3>
         <input type="file" onChange={handleFileChange} />
@@ -172,9 +134,10 @@ const GalleryImages = () => {
       {modalVisible && (
         <Modal
           imageUrl={`http://localhost:8080/api/images/${selectedImage}`}
-          annotations={selectedAnnotations && selectedAnnotations.annotations}
-          onClose={closeModal}
-      />
+          annotations={selectedAnnotations ? selectedAnnotations.annotations : []}
+          onClose={closeModal} 
+          loading={loadingAnnotations}
+        />
       )}
     </div>
   );
