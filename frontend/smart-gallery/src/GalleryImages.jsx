@@ -107,8 +107,11 @@ const GalleryImages = () => {
     setSelectedAnnotations(selectedAnno);
   }, [annotations, selectedImage]);
 
+  // Set a fixed size for the displayed images
+  const fixedImageSize = 150;
+
   return (
-<div>
+    <div>
       <h2>Image Gallery</h2>
       {loadingImages ? (
         <Loading text="Fetching images..." />
@@ -119,7 +122,7 @@ const GalleryImages = () => {
               <img
                 src={`http://localhost:8080/api/images/${imageName}`}
                 alt={imageName}
-                style={{ width: '150px', cursor: 'pointer' }}
+                style={{ width: fixedImageSize, height: fixedImageSize, cursor: 'pointer' }}
                 onClick={() => handleImageClick(imageName)}
               />
             </div>
