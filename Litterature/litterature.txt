@@ -1,0 +1,10 @@
+https://ieeexplore.ieee.org/abstract/document/7918589
+https://github.com/karpathy/minGPT
+https://github.com/damo-cv/TransReID/blob/main/model/backbones/vit_pytorch.py#L291
+https://github.com/SiddhantKapil/LA-Transformer/tree/main
+https://openaccess.thecvf.com/content/ICCV2021/html/He_TransReID_Transformer-Based_Object_Re-Identification_ICCV_2021_paper.html
+https://www.sciencedirect.com/science/article/pii/S1047320321002765
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0287979
+https://arxiv.org/pdf/2106.03720.pdf
+https://github.com/naziaperwaiz/UV-ABLM/tree/main
+https://link.springer.com/article/10.1007/s00138-023-01376-4

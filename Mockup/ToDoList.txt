@@ -1,8 +1,8 @@
 To do AI project :
 
-- Comprendre pourquoi bouton upload est tlmt lent
 - Fichier JSON avec annotation => permet d'aller plus vite => pas recalculer à chaque fois => lookup json file
 - Key JSON ? Nom image ou index ou random key ? 
+
 - Check (filter, user input verification) input image front et back 
 
 - Etapes pour v2 du modèle de detection :
@@ -11,3 +11,8 @@ To do AI project :
     -- Utiliser ces embeddings pour regrouper les "semblables" avec un algo de clustering (k-means ? + problemes possible des définition des nbres de cluster ?)
     -- Assigner des labels sur base des embeddings (random qu'utilisateur peut modifier)
     -- Utiliser yolo pour la detection des bounding boxes avec les labels définit précedement 
+
+    -- Re-identification models
+
+    -- Siamese networks
+
