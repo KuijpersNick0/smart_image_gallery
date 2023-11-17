@@ -1,8 +1,8 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import GalleryImages from './GalleryImages';
-import Custom from './Custom'; // Remplacez CustomComponent par le nom de votre composant personnalisé
+import Custom from './Custom';
 
 function App() {
   return (
@@ -10,9 +10,13 @@ function App() {
       <div className="App">
         <h1>Smart Gallery</h1>
 
-        <Route path="/" exact component={GalleryImages} />
-        <Route path="/custom" component={Custom} />
-        {/* Ajoutez d'autres routes personnalisées ici si nécessaire */}
+        <Switch>
+          <Route path="/custom" exact component={Custom}></Route>
+          <Route path="/" exact component={GalleryImages}></Route> 
+          
+          {/* Ajoutez d'autres routes personnalisées ici si nécessaire */}
+         
+        </Switch>
       </div>
     </Router>
   );
