@@ -1,3 +1,4 @@
+1. First research on ViT's (vision transformers) in person ReID (re-identification) problem :
 https://ieeexplore.ieee.org/abstract/document/7918589
 https://github.com/karpathy/minGPT
 https://github.com/damo-cv/TransReID/blob/main/model/backbones/vit_pytorch.py#L291
@@ -8,3 +9,9 @@ https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0287979
 https://arxiv.org/pdf/2106.03720.pdf
 https://github.com/naziaperwaiz/UV-ABLM/tree/main
 https://link.springer.com/article/10.1007/s00138-023-01376-4
+
+
+2. Second addition
+
+How do vision transformers work : (+ combining CNN and ViT, AlterNet)
+https://arxiv.org/pdf/2202.06709.pdf
