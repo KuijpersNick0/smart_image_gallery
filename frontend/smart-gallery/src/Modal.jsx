@@ -68,9 +68,8 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
         {error && <div>Error loading image</div>}
         {!loading && !error && <canvas ref={canvasRef} />}
         <button onClick={onClose}>Close</button>
-  
-        {/* Ajoutez le bouton pour la redirection vers la route "/custom" */}
-        <Link to={"/custom"} onClick={() => window.location.reload()}>
+        
+        <Link to="/custom">
           <button>Edit</button>
         </Link>
       </div>

@@ -1,4 +1,4 @@
 # Ignore node_modules in the frontend/smart-gallery directory
-frontend/smart-gallery/node_modules/
-backend/detection.py
-backend/static/annotations/
+/frontend/smart-gallery/node_modules/
+/backend/detection.py
+/backend/static/annotations/

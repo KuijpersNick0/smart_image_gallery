@@ -11,11 +11,12 @@ function App() {
         <h1>Smart Gallery</h1>
 
         <Switch>
-          <Route path="/custom" exact component={Custom}></Route>
-          <Route path="/" exact component={GalleryImages}></Route> 
-          
-          {/* Ajoutez d'autres routes personnalisées ici si nécessaire */}
-         
+          <Route exact path="/custom" >
+            <Custom />
+          </Route>
+          <Route exact path="/">
+            <GalleryImages />  
+          </Route>  
         </Switch>
       </div>
     </Router>
