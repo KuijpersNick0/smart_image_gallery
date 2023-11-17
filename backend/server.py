@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import base64
 import io
+import json
 
 
 # app instance
@@ -52,12 +53,21 @@ def upload_image():
         file.save(os.path.join('static/uploads', file.filename))
         return jsonify({'message': 'File uploaded successfully'})
 
+ANNOTATIONS_FOLDER = 'static/annotations/'
 
 @app.route('/api/detect-boxes/<path:image_name>', methods=['GET'])
 @cross_origin()
 def detect_boxes_route(image_name):
     image_path = os.path.join(IMAGE_FOLDER, image_name)
-    annotations = detect_boxes(image_path)
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            annotations = json.load(f)
+    else:
+        annotations = detect_boxes(image_path)
+        with open(json_path, 'w') as f:
+            json.dump(annotations, f)
     
     return jsonify({'annotations': annotations})
 

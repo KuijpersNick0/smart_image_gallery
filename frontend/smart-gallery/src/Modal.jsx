@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './styles/style.css';
 import Loading from './Loading';
+import { Link } from 'react-router-dom';
 
 const Modal = ({ imageUrl, annotations, onClose, loading}) => {
   const canvasRef = useRef(null); 
@@ -62,13 +63,18 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      {loading && <Loading text="Fetching annotation..." />}
-      {error && <div>Error loading image</div>}
-      {!loading && !error && <canvas ref={canvasRef} />}
-      <button onClick={onClose}>Close</button>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {loading && <Loading text="Fetching annotation..." />}
+        {error && <div>Error loading image</div>}
+        {!loading && !error && <canvas ref={canvasRef} />}
+        <button onClick={onClose}>Close</button>
+  
+        {/* Ajoutez le bouton pour la redirection vers la route "/custom" */}
+        <Link to={"/custom"} onClick={() => window.location.reload()}>
+          <button>Edit</button>
+        </Link>
+      </div>
     </div>
-  </div>
   );
 };
 

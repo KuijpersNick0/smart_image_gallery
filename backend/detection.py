@@ -96,7 +96,7 @@ def detect_boxes(image_path):
     # after nms and draw bounding box
     for i in indices:
         # api changes
-        i = i[0]
+        # i = i[0]
         box = boxes[i]
         x = box[0]
         y = box[1]
