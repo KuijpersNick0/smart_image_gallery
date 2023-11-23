@@ -71,5 +71,17 @@ def detect_boxes_route(image_name):
     
     return jsonify({'annotations': annotations})
 
+@app.route('/api/get-annotations/<path:image_name>', methods=['GET'])
+@cross_origin()
+def get_annotations_route(image_name):
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            annotations = json.load(f)
+        return jsonify({'annotations': annotations})
+    else:
+        return jsonify({'error': 'Annotations not found'}), 404
+
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)
