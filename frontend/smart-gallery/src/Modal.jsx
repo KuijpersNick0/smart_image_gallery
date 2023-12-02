@@ -69,9 +69,13 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
         {!loading && !error && <canvas ref={canvasRef} />}
         <button onClick={onClose}>Close</button>
         
-        <Link to="/custom">
-          <button>Edit</button>
+        <Link to={{
+          pathname: '/custom',
+          state: { image: imageUrl }
+        }}>
+          Edit
         </Link>
+
       </div>
     </div>
   );
