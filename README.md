@@ -27,6 +27,7 @@ Make sure you have the following libraries installed:
 - PyTorch
 - CUDA
 - TensorFlow
+- timm
 
 ## Contributors
 Baudouin LOSSEAU  (@195093@ecam.be)
