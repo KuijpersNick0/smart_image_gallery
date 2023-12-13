@@ -71,6 +71,18 @@ def detect_boxes_route(image_name):
     
     return jsonify({'annotations': annotations})
 
+@app.route('/api/recalculate-annotations/<path:image_name>', methods=['POST'])
+@cross_origin()
+def recalculate_annotations_route(image_name):
+    image_path = os.path.join(IMAGE_FOLDER, image_name)
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+
+    annotations = detect_boxes(image_path)
+    with open(json_path, 'w') as f:
+        json.dump(annotations, f)
+    
+    return jsonify({'annotations': annotations})
+
 @app.route('/api/get-annotations/<path:image_name>', methods=['GET'])
 @cross_origin()
 def get_annotations_route(image_name):
@@ -82,6 +94,52 @@ def get_annotations_route(image_name):
         return jsonify({'annotations': annotations})
     else:
         return jsonify({'error': 'Annotations not found'}), 404
+
+
+@app.route('/api/delete-annotation/<path:image_name>', methods=['DELETE'])
+@cross_origin()
+def delete_annotation(image_name):
+    id = request.json['id']
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            annotations = json.load(f)
+        
+        # Filter out the annotation with the provided id
+        annotations = [ann for ann in annotations if ann['id'] != id]
+
+        # Save the remaining annotations back to the file
+        with open(json_path, 'w') as f:
+            json.dump(annotations, f)
+
+        return jsonify({'message': 'Annotation deleted successfully'})
+    else:
+        return jsonify({'error': 'Annotations not found'}), 405
+
+@app.route('/api/modify-annotation/<path:image_name>', methods=['PUT'])
+@cross_origin()
+def modify_annotation(image_name):
+    old_label = request.json['oldLabel']
+    new_label = request.json['newLabel']
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            annotations = json.load(f)
+        
+        # Modify the label of the annotation with the provided old label
+        for ann in annotations:
+            if ann['label'] == old_label:
+                ann['label'] = new_label
+
+        # Save the modified annotations back to the file
+        with open(json_path, 'w') as f:
+            json.dump(annotations, f)
+
+        return jsonify({'message': 'Annotation modified successfully'})
+    else:
+        return jsonify({'error': 'Annotations not found'}), 407
 
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)

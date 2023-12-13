@@ -2,6 +2,7 @@ import os
 import json
 import cv2
 import numpy as np
+import uuid
 # from weights import yolov3.cfg, yolov3.weights
 
 # function to get the output layer names 
@@ -96,7 +97,7 @@ def detect_boxes(image_path):
     # after nms and draw bounding box
     for i in indices:
         # api changes
-        i = i[0]
+        # i = i[0]
         box = boxes[i]
         x = box[0]
         y = box[1]
@@ -106,6 +107,7 @@ def detect_boxes(image_path):
         label = str(classes[class_ids[i]])
 
         annotation = {
+            'id': str(uuid.uuid4()),  # assign a unique id to each annotation
             'label': label,
             'coordinates': {
                 'x': int(x),
