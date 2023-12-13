@@ -69,9 +69,9 @@ const Custom = () => {
     if (selectedAnnotation) {
       const newLabel = prompt('Enter new label');
       if (newLabel) {
-        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { oldLabel: selectedAnnotation.label, newLabel })
+        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newLabel })
           .then(() => {
-            setAnnotations(annotations.map(ann => ann.label === selectedAnnotation.label ? { ...ann, label: newLabel } : ann));
+            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newLabel } : ann));
             setSelectedAnnotation(null);
           })
           .catch(console.error);

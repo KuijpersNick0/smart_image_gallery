@@ -120,7 +120,7 @@ def delete_annotation(image_name):
 @app.route('/api/modify-annotation/<path:image_name>', methods=['PUT'])
 @cross_origin()
 def modify_annotation(image_name):
-    old_label = request.json['oldLabel']
+    id = request.json['id']
     new_label = request.json['newLabel']
     json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
 
@@ -128,9 +128,9 @@ def modify_annotation(image_name):
         with open(json_path, 'r') as f:
             annotations = json.load(f)
         
-        # Modify the label of the annotation with the provided old label
+        # Modify the label of the annotation with the provided id
         for ann in annotations:
-            if ann['label'] == old_label:
+            if ann['id'] == id:
                 ann['label'] = new_label
 
         # Save the modified annotations back to the file
