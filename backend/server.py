@@ -8,7 +8,7 @@ import numpy as np
 import base64
 import io
 import json
-
+import uuid
 
 # app instance
 app = Flask(__name__)
@@ -121,17 +121,17 @@ def delete_annotation(image_name):
 @cross_origin()
 def modify_annotation(image_name):
     id = request.json['id']
-    new_name = request.json['newName']  # Change 'newLabel' to 'newName'
+    new_label = request.json['newLabel']
     json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
 
     if os.path.exists(json_path):
         with open(json_path, 'r') as f:
             annotations = json.load(f)
         
-        # Modify the name of the annotation with the provided id
+        # Modify the label of the annotation with the provided id
         for ann in annotations:
             if ann['id'] == id:
-                ann['name'] = new_name  # Change 'label' to 'name'
+                ann['label'] = new_label
 
         # Save the modified annotations back to the file
         with open(json_path, 'w') as f:
@@ -140,6 +140,25 @@ def modify_annotation(image_name):
         return jsonify({'message': 'Annotation modified successfully'})
     else:
         return jsonify({'error': 'Annotations not found'}), 407
+
+@app.route('/api/add-annotation/<path:image_name>', methods=['POST'])
+@cross_origin()
+def add_annotation_route(image_name):
+    json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
+    new_annotation = request.json
+
+    # Ajouter un identifiant unique à chaque annotation
+    new_annotation['id'] = str(uuid.uuid4())
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r+') as f:
+            annotations = json.load(f)
+            annotations.append(new_annotation)
+            f.seek(0)
+            json.dump(annotations, f)
+        return jsonify({'annotation': new_annotation})
+    else:
+        return jsonify({'error': 'Annotations not found'}), 404
 
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)
