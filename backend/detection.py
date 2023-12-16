@@ -109,6 +109,7 @@ def detect_boxes(image_path):
         annotation = {
             'id': str(uuid.uuid4()),  # assign a unique id to each annotation
             'label': label,
+            'name':'' ,
             'coordinates': {
                 'x': int(x),
                 'y': int(y),

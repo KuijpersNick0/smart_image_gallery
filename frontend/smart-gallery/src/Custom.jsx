@@ -11,31 +11,16 @@ const Custom = () => {
   const fixedImageSize = 500; 
   const imageName = imageUrl.split('/').pop();
   const [showAllAnnotations, setShowAllAnnotations] = useState(true);
+  const [trigger, setTrigger] = useState(0);
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/get-annotations/${imageName}`)
       .then(response => setAnnotations(response.data.annotations))
       .catch(console.error);
-  }, [imageName]);
+    console.log('useEffect for getting annotations executed');
+  }, [imageName, trigger]);
 
-  useEffect(() => { 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d'); 
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => {
-      const scaleFactor = fixedImageSize / Math.max(img.width, img.height);
-      canvas.width = img.width * scaleFactor;
-      canvas.height = img.height * scaleFactor;
-
-      ctx?.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
-      if (selectedAnnotation) {  
-        drawRectangle(ctx, selectedAnnotation, scaleFactor);
-      } 
-    };
-  }, [imageUrl, selectedAnnotation]);
-
-  const drawRectangle = (ctx, { coordinates: { height, width, x, y }, label }, scaleFactor) => {  
+  const drawRectangle = (ctx, { coordinates: { height, width, x, y }, label, name }, scaleFactor) => {  
     const [scaledX, scaledY, scaledWidth, scaledHeight] = [x, y, width, height].map(dim => dim * scaleFactor);
     
     ctx.beginPath();
@@ -46,12 +31,14 @@ const Custom = () => {
 
     ctx.font = '14px Arial';
     ctx.fillStyle = '#FF0000';
-    ctx.fillText(label, scaledX, scaledY - 5);
+    ctx.fillText(name ? name : label, scaledX, scaledY - 5);
+    console.log('drawRectangle executed');
   };
 
   const handleSelectChange = (event) => {
     const annotation = annotations.find(ann => ann.id === event.target.value);
     setSelectedAnnotation(annotation);
+    console.log('handleSelectChange executed');
   };
 
   const handleDeleteClick = () => {
@@ -63,57 +50,64 @@ const Custom = () => {
         })
         .catch(console.error);
     }
+    console.log('handleDeleteClick executed');
   };
 
   const handleModifyClick = () => {
     if (selectedAnnotation) {
-      const newLabel = prompt('Enter new label');
-      if (newLabel) {
-        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newLabel })
+      const newName = prompt('Enter new label');
+      if (newName) {
+        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newName })
           .then(() => {
-            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newLabel } : ann));
+            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newName } : ann));
             setSelectedAnnotation(null);
+            setTrigger(prev => prev + 1); // Mettez à jour l'état ici
           })
           .catch(console.error);
       }
     }
+    console.log('handleModifyClick executed');
   };
 
   useEffect(() => { 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d'); 
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => {
-      const scaleFactor = fixedImageSize / Math.max(img.width, img.height);
-      canvas.width = img.width * scaleFactor;
-      canvas.height = img.height * scaleFactor;
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d'); 
+      const img = new Image();
+      img.src = imageUrl;
+      img.onload = () => {
+        const scaleFactor = fixedImageSize / Math.max(img.width, img.height);
+        canvas.width = img.width * scaleFactor;
+        canvas.height = img.height * scaleFactor;
 
-      ctx?.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
-      if (showAllAnnotations) {
-        annotations.forEach(annotation => drawRectangle(ctx, annotation, scaleFactor));
-      } else if (selectedAnnotation) {  
-        drawRectangle(ctx, selectedAnnotation, scaleFactor);
-      } 
-    };
-  }, [imageUrl, selectedAnnotation, showAllAnnotations, annotations]);
+        ctx?.drawImage(img, 0, 0, img.width * scaleFactor, img.height * scaleFactor);
+        if (showAllAnnotations) {
+          annotations.forEach(annotation => drawRectangle(ctx, annotation, scaleFactor));
+        } else if (selectedAnnotation) {  
+          drawRectangle(ctx, selectedAnnotation, scaleFactor);
+        } 
+      };
+      console.log('useEffect for drawing executed');
+    }, [imageUrl, selectedAnnotation, showAllAnnotations, annotations]);
 
   const handleShowAllClick = () => {
     setShowAllAnnotations(!showAllAnnotations);
+    console.log('handleShowAllClick executed');
   };
 
   const handleRecalculateClick = () => {
     axios.post(`http://localhost:8080/api/recalculate-annotations/${imageName}`)
       .then(response => setAnnotations(response.data.annotations))
       .catch(console.error);
+      setTrigger(prev => prev + 1);
+      console.log('handleRecalculateClick executed');
   };
 
   return (
     <div>
       <select onChange={handleSelectChange}>
         <option value="">Select an annotation</option>
-        {annotations.map(({ id, label }) => (
-          <option key={id} value={id}>{label}</option>
+        {annotations.map(({ id, label, name }) => (
+          <option key={id} value={id}>{name ? name : label}</option>
         ))}
       </select>
       <button onClick={handleDeleteClick}>Delete</button>

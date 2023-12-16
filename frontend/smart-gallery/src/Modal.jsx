@@ -37,11 +37,8 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
 
   const drawRectangles = (ctx, annotations, scaleFactor) => {  
     annotations.forEach((annotation) => { 
-        // console.log('Drawing annotation:', annotation);
-        const { coordinates, label } = annotation;
+        const { coordinates, label, name } = annotation;
         const { height, width, x, y } = coordinates;
-        // console.log('Drawing rectangle:', x, y, width, height, label);
-        // Scale the coordinates
         const scaledX = x * scaleFactor;
         const scaledY = y * scaleFactor;
         const scaledWidth = width * scaleFactor;
@@ -57,7 +54,8 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
         // Draw the label
         ctx.font = '14px Arial';
         ctx.fillStyle = '#FF0000';
-        ctx.fillText(label, scaledX, scaledY - 5);
+        // If name is not empty, draw name. Otherwise, draw label.
+        ctx.fillText(name ? name : label, scaledX, scaledY - 5);
     });
   };
 
