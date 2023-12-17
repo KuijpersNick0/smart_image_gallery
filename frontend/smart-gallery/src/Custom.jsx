@@ -20,7 +20,7 @@ const Custom = () => {
     axios.get(`http://localhost:8080/api/get-annotations/${imageName}`)
       .then(response => setAnnotations(response.data.annotations))
       .catch(console.error);
-  }, [imageName]);
+  }, [imageName, selectedAnnotation]);
 
   useEffect(() => { 
     const canvas = canvasRef.current;
@@ -78,11 +78,12 @@ const Custom = () => {
 
   const handleModifyClick = () => {
     if (selectedAnnotation) {
-      const newName = prompt('Enter new label');
-      if (newName) {
-        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newName })
+      const newName = prompt('Enter new name', selectedAnnotation.name);
+      const newLabel = prompt('Enter new label', selectedAnnotation.label);
+      if (newName && newLabel) {
+        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newName, newLabel })
           .then(() => {
-            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newName } : ann));
+            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, name: newName, label: newLabel } : ann));
             setSelectedAnnotation(null);
           })
           .catch(console.error);
