@@ -18,6 +18,9 @@ const GalleryImages = () => {
   // Loading state when annotations or images are being fetched 
   const [loadingImages, setLoadingImages] = useState(true); 
   const [loadingAnnotations, setAnnotationsLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState('');
+  const [FilteredImageList, setFilteredImageList] = useState([]);
+
   
   // Fetch image list when the component mounts
   useEffect(() => {
@@ -29,6 +32,7 @@ const GalleryImages = () => {
     try {
       const response = await axios.get('http://localhost:8080/api/images');
       setImageList(response.data);
+      setFilteredImageList(response.data); // Ajoutez cette ligne
     } catch (error) {
       console.error('Error fetching image list:', error);
     } finally {
@@ -110,14 +114,64 @@ const GalleryImages = () => {
   // Set a fixed size for the displayed images
   const fixedImageSize = 150;
 
+  const handleSearchChange = (event) => {
+    const newSearchValue = event.target.value;
+    setSearchValue(newSearchValue);
+    updateFilteredImageList(newSearchValue);
+  };
+
+  const [allAnnotations, setAllAnnotations] = useState({});
+
+  useEffect(() => {
+    let requests = imageList.map(imageName => {
+      return axios.get(`http://localhost:8080/api/get-annotations/${imageName}`)
+        .then(response => {
+          return { imageName, annotations: response.data.annotations };
+        })
+        .catch(console.error);
+    });
+    Promise.all(requests).then(results => {
+      let newAllAnnotations = {};
+      results.forEach(result => {
+        // Check if result is not undefined before accessing its properties
+        if (result) {
+          newAllAnnotations[result.imageName] = result.annotations;
+        }
+      });
+      setAllAnnotations(newAllAnnotations);
+    });
+  }, [imageList]);
+
+  const updateFilteredImageList = (searchValue) => {
+    console.log('updateFilteredImageList', searchValue);
+    if (searchValue === '') {
+      setFilteredImageList(imageList);
+      return;
+    }
+    let newFilteredList = [];
+    for (let imageName in allAnnotations) {
+      if (allAnnotations[imageName].some(annotation => 
+        annotation.name.includes(searchValue) || annotation.label.includes(searchValue))) {
+        newFilteredList.push(imageName);
+      }
+    }
+    setFilteredImageList(newFilteredList);
+  };
+
   return (
     <div>
       <h2>Image Gallery</h2>
+      <input 
+      type="text" 
+      placeholder="Search..." 
+      value={searchValue} 
+      onChange={handleSearchChange} 
+    />
       {loadingImages ? (
         <Loading text="Fetching images..." />
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {imageList.map((imageName, index) => (
+          {FilteredImageList.map((imageName, index) => (
             <div key={imageName} style={{ margin: '10px', position: 'relative' }}>
               <img
                 src={`http://localhost:8080/api/images/${imageName}`}
