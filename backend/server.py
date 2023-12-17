@@ -121,17 +121,17 @@ def delete_annotation(image_name):
 @cross_origin()
 def modify_annotation(image_name):
     id = request.json['id']
-    new_label = request.json['newLabel']
+    new_name = request.json['newName']
     json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
 
     if os.path.exists(json_path):
         with open(json_path, 'r') as f:
             annotations = json.load(f)
         
-        # Modify the label of the annotation with the provided id
+        # Modify the name of the annotation with the provided id
         for ann in annotations:
             if ann['id'] == id:
-                ann['label'] = new_label
+                ann['name'] = new_name
 
         # Save the modified annotations back to the file
         with open(json_path, 'w') as f:

@@ -43,7 +43,7 @@ const Custom = () => {
     };
   }, [imageUrl, selectedAnnotation]);
 
-  const drawRectangle = (ctx, { coordinates: { height, width, x, y }, label }, scaleFactor) => {  
+  const drawRectangle = (ctx, { coordinates: { height, width, x, y }, label, name }, scaleFactor) => {  
     const [scaledX, scaledY, scaledWidth, scaledHeight] = [x, y, width, height].map(dim => dim * scaleFactor);
     
     ctx.beginPath();
@@ -54,11 +54,14 @@ const Custom = () => {
 
     ctx.font = '14px Arial';
     ctx.fillStyle = '#FF0000';
-    ctx.fillText(label, scaledX, scaledY - 5);
+    ctx.fillText(name ? name : label, scaledX, scaledY - 5);
   };
 
   const handleSelectChange = (event) => {
     const annotation = annotations.find(ann => ann.id === event.target.value);
+    if (annotation && !annotation.name) {
+      annotation.name = annotation.label;
+    }
     setSelectedAnnotation(annotation);
   };
 
@@ -75,11 +78,11 @@ const Custom = () => {
 
   const handleModifyClick = () => {
     if (selectedAnnotation) {
-      const newLabel = prompt('Enter new label');
-      if (newLabel) {
-        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newLabel })
+      const newName = prompt('Enter new label');
+      if (newName) {
+        axios.put(`http://localhost:8080/api/modify-annotation/${imageName}`, { id: selectedAnnotation.id, newName })
           .then(() => {
-            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newLabel } : ann));
+            setAnnotations(annotations.map(ann => ann.id === selectedAnnotation.id ? { ...ann, label: newName } : ann));
             setSelectedAnnotation(null);
           })
           .catch(console.error);
@@ -168,9 +171,9 @@ const Custom = () => {
   return (
     <div>
       <select onChange={handleSelectChange}>
-        <option value="">Select an annotation</option>
-        {annotations.map(({ id, label }) => (
-          <option key={id} value={id}>{label}</option>
+        <option value="">Sélectionnez une annotation</option>
+        {annotations.map(({ id, label, name }) => (
+          <option key={id} value={id}>{name ? name : label}</option>
         ))}
       </select>
       <button onClick={handleDeleteClick}>Delete</button>
