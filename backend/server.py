@@ -61,10 +61,6 @@ def detect_boxes_route(image_name):
     image_path = os.path.join(IMAGE_FOLDER, image_name)
     json_path = os.path.join(ANNOTATIONS_FOLDER, f'{image_name}.json')
 
-    # Créer le dossier s'il n'existe pas
-    if not os.path.exists(ANNOTATIONS_FOLDER):
-        os.makedirs(ANNOTATIONS_FOLDER)
-
     if os.path.exists(json_path):
         with open(json_path, 'r') as f:
             annotations = json.load(f)
