@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './styles/style.css';
 import Loading from './Loading';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Modal = ({ imageUrl, annotations, onClose, loading}) => {
   const canvasRef = useRef(null); 
@@ -59,6 +60,22 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
     });
   };
 
+  // inference of ViT for name clustering
+  const handleInference = () => {
+    if (annotations && annotations[0] && annotations[0].name) {
+      const { name, label } = annotations[0];
+      const image_name = imageUrl;
+  
+      axios.post('http://localhost:8080/api/inference_ViT', { name, label, image_name })
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -73,6 +90,12 @@ const Modal = ({ imageUrl, annotations, onClose, loading}) => {
         }}>
           Edit
         </Link>
+      
+
+        
+        {annotations && annotations[0] && annotations[0].name && (
+          <button onClick={handleInference}>Find similar names</button>
+        )}
 
       </div>
     </div>

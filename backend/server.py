@@ -9,6 +9,7 @@ import base64
 import io
 import json
 import uuid
+from ViT import inference_ViT  
 
 # app instance
 app = Flask(__name__)
@@ -22,6 +23,9 @@ app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
  
+ANNOTATIONS_FOLDER = 'static/annotations/'
+
+
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -53,7 +57,6 @@ def upload_image():
         file.save(os.path.join('static/uploads', file.filename))
         return jsonify({'message': 'File uploaded successfully'})
 
-ANNOTATIONS_FOLDER = 'static/annotations/'
 
 @app.route('/api/detect-boxes/<path:image_name>', methods=['GET'])
 @cross_origin()
@@ -161,6 +164,45 @@ def add_annotation_route(image_name):
         return jsonify({'annotation': new_annotation})
     else:
         return jsonify({'error': 'Annotations not found'}), 404
+
+# Find the json annotation file with the provided id
+def find_annotation_by_id_and_change(annotations, id, name):
+    for ann in annotations:
+        json_path = os.path.join(ANNOTATIONS_FOLDER, f'{ann}')
+        print(json_path)
+        if os.path.exists(json_path):
+            with open(json_path, 'r+') as f:
+                print("changing")
+                data = json.load(f)
+                for item in data:
+                    if item['id'] == id: 
+                        item['name'] = name  # Update the 'name' field
+                        f.seek(0)
+                        json.dump(data, f)
+                        f.truncate()
+    return None
+
+from urllib.parse import urlparse
+
+@app.route('/api/inference_ViT', methods=['POST'])
+@cross_origin()
+def handle_inference_ViT():
+    data = request.get_json()
+    name = data['name']
+    label = data['label']
+    image_name = data['image_name']
+
+    image_name = urlparse(image_name).path.split('/')[-1]
+    
+    same_cluster_ids = inference_ViT.inference(name, label, image_name)
+
+    all_annotations = os.listdir(ANNOTATIONS_FOLDER)
+    all_annotations.remove(f'{image_name}.json') 
+
+    for id in same_cluster_ids:
+        find_annotation_by_id_and_change(all_annotations, id, name) 
+        print(id)
+    return jsonify({'message': 'Names updated successfully'}), 200
 
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)
