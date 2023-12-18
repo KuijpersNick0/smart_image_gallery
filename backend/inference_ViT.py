@@ -56,7 +56,7 @@ def extract_features_from_bbox(image, bbox, model):
     return model(transformed_image)
 
 def get_bbox_for_name_and_label(image_name, name, label):
-    annotation_path = "C:/Users/shop/Documents/MA2/Q1/AI_project/backend/static/annotations/" + image_name + ".json"
+    annotation_path = "static/annotations/" + image_name + ".json"
     with open(annotation_path, 'r') as json_file:
         data = json.load(json_file)
         for entry in data:
@@ -65,7 +65,7 @@ def get_bbox_for_name_and_label(image_name, name, label):
     return None, None
 
 def get_bbox_for_label(image_name, label):
-    annotation_path = "C:/Users/shop/Documents/MA2/Q1/AI_project/backend/static/annotations/" + image_name + ".json"
+    annotation_path = "static/annotations/" + image_name + ".json"
     with open(annotation_path, 'r') as file:
         data = json.load(file)
 
@@ -77,13 +77,13 @@ def get_bbox_for_label(image_name, label):
 def inference(name, label, image_name):    
     parsed_url = urlparse(image_name)
     image_name = parsed_url.path.split('/')[-1]
-    reference_image_path = 'C:/Users/shop/Documents/MA2/Q1/AI_project/backend/static/uploads/' + image_name
-    other_image_names = os.listdir('C:/Users/shop/Documents/MA2/Q1/AI_project/backend/static/uploads/')    
+    reference_image_path = 'static/uploads/' + image_name
+    other_image_names = os.listdir('static/uploads/')    
     other_image_names.remove(image_name) 
 
     # Create the model (trained)
     model = timm.create_model('deit3_small_patch16_224.fb_in1k', pretrained=True, num_classes = 0)
-    model.load_state_dict(torch.load('C:/Users/shop/Documents/MA2/Q1/AI_project/backend/weights/model_v3_deit3_small.pth'))
+    model.load_state_dict(torch.load('weights/model_v3_deit3_small.pth'))
     model.eval()
 
     reference_image = cv2.imread(reference_image_path)  
@@ -98,7 +98,7 @@ def inference(name, label, image_name):
     for i, other_image_name in enumerate(other_image_names):
         id, bbox = get_bbox_for_label(other_image_name, label)
         if bbox is not None:  
-            other_image = cv2.imread('C:/Users/shop/Documents/MA2/Q1/AI_project/backend/static/uploads/' + other_image_name)
+            other_image = cv2.imread('static/uploads/' + other_image_name)
             other_features = extract_features_from_bbox(other_image, bbox, model)
             all_features.append(other_features)
             all_ids.append(id) 

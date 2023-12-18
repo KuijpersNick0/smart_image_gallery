@@ -9,7 +9,7 @@ import base64
 import io
 import json
 import uuid
-from ViT import inference_ViT  
+from inference_ViT import inference
 
 # app instance
 app = Flask(__name__)
@@ -168,14 +168,12 @@ def add_annotation_route(image_name):
 # Find the json annotation file with the provided id
 def find_annotation_by_id_and_change(annotations, id, name):
     for ann in annotations:
-        json_path = os.path.join(ANNOTATIONS_FOLDER, f'{ann}')
-        print(json_path)
+        json_path = os.path.join(ANNOTATIONS_FOLDER, f'{ann}') 
         if os.path.exists(json_path):
-            with open(json_path, 'r+') as f:
-                print("changing")
+            with open(json_path, 'r+') as f: 
                 data = json.load(f)
                 for item in data:
-                    if item['id'] == id: 
+                    if item['id'] == id and not item['name']:  # Check if 'name' field is empty 
                         item['name'] = name  # Update the 'name' field
                         f.seek(0)
                         json.dump(data, f)
@@ -190,18 +188,16 @@ def handle_inference_ViT():
     data = request.get_json()
     name = data['name']
     label = data['label']
-    image_name = data['image_name']
-
+    image_name = data['image_name'] 
     image_name = urlparse(image_name).path.split('/')[-1]
-    
-    same_cluster_ids = inference_ViT.inference(name, label, image_name)
+
+    same_cluster_ids = inference(name, label, image_name)
 
     all_annotations = os.listdir(ANNOTATIONS_FOLDER)
     all_annotations.remove(f'{image_name}.json') 
 
     for id in same_cluster_ids:
-        find_annotation_by_id_and_change(all_annotations, id, name) 
-        print(id)
+        find_annotation_by_id_and_change(all_annotations, id, name)  
     return jsonify({'message': 'Names updated successfully'}), 200
 
 if __name__ == "__main__":
