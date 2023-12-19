@@ -15,6 +15,8 @@ const Custom = () => {
   const [drawing, setDrawing] = useState(false);
   const [rect, setRect] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [scaleFactor, setScaleFactor] = useState(1);
+  const [message, setMessage] = useState('');
+  const [inferences, setInferences] = useState([]);
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/get-annotations/${imageName}`)
@@ -169,35 +171,76 @@ const Custom = () => {
       },
     });
   };
+
+  const handleInference = () => {
+    if (selectedAnnotation && selectedAnnotation.name) {
+      const { name, label } = selectedAnnotation;
+      const image_name = imageUrl;
+  
+      axios.post('http://localhost:8080/api/inference_ViT', { name, label, image_name })
+        .then(response => {
+          setMessage(response.data.message);
+          setInferences(response.data.inferences || []);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  }
+  
   return (
-    <div>
-      <select onChange={handleSelectChange}>
-        <option value="">Sélectionnez une annotation</option>
-        {annotations.map(({ id, label, name }) => (
-          <option key={id} value={id}>{name ? name : label}</option>
-        ))}
-      </select>
-      <button onClick={handleDeleteClick}>Delete</button>
-      <button onClick={handleModifyClick}>Modify</button>
-      <button onClick={handleShowAllClick}>{showAllAnnotations ? 'Hide All' : 'Show All'}</button>
-      <button onClick={handleRecalculateClick}>Recalculate</button>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <canvas 
         ref={canvasRef} 
-        style={{ width: '33.33%', float: 'left', margin: '20px' }} 
+        style={{ width: '33.33%', margin: '20px' }} 
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       />
-      <Link to="/">Back</Link>
-      <form onSubmit={handleFormSubmit}>
-        <input type="text" name="label" value={newAnnotation.label} onChange={handleInputChange} placeholder="Label" required />
-        <input type="text" name="name" value={newAnnotation.name} onChange={handleInputChange} placeholder="Name" />
-        <input type="text" name="x" value={newAnnotation.coordinates.x} onChange={handleCoordinateChange} placeholder="X" required />
-        <input type="text" name="y" value={newAnnotation.coordinates.y} onChange={handleCoordinateChange} placeholder="Y" required /> 
-        <input type="text" name="width" value={newAnnotation.coordinates.width} onChange={handleCoordinateChange} placeholder="Width" required />
-        <input type="text" name="height" value={newAnnotation.coordinates.height} onChange={handleCoordinateChange} placeholder="Height" required />
-        <button type="submit">Add Annotation</button>
-      </form>
+
+      <div>
+        <p>Select an annotation from the dropdown:</p>
+        <select onChange={handleSelectChange}>
+          <option value="">Sélectionnez une annotation</option>
+          {annotations.map(({ id, label, name }) => (
+            <option key={id} value={id}>{name ? name : label}</option>
+          ))}
+        </select>
+
+        <p>Actions related to the selected annotation:</p>
+        <button onClick={handleDeleteClick}>Delete</button>
+        <button onClick={handleModifyClick}>Modify</button>
+        <button onClick={handleInference}>Run Inference</button>
+
+        <p>Message from inference: {message}</p>
+        {inferences.length > 0 && (
+          <div>
+            <p>Inferences:</p>
+            <ul>
+              {inferences.map((inference, index) => (
+                <li key={index}>{inference}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <p>General actions:</p>
+        <button onClick={handleShowAllClick}>{showAllAnnotations ? 'Hide All' : 'Show All'}</button>
+        <button onClick={handleRecalculateClick}>Recalculate</button>
+
+        <p>Add a new anotation by drawing on the image or directly inserting the coordinates </p>
+        <form onSubmit={handleFormSubmit}>
+          <input type="text" name="label" value={newAnnotation.label} onChange={handleInputChange} placeholder="Label" required />
+          <input type="text" name="name" value={newAnnotation.name} onChange={handleInputChange} placeholder="Name" />
+          <input type="text" name="x" value={newAnnotation.coordinates.x} onChange={handleCoordinateChange} placeholder="X" required />
+          <input type="text" name="y" value={newAnnotation.coordinates.y} onChange={handleCoordinateChange} placeholder="Y" required /> 
+          <input type="text" name="width" value={newAnnotation.coordinates.width} onChange={handleCoordinateChange} placeholder="Width" required />
+          <input type="text" name="height" value={newAnnotation.coordinates.height} onChange={handleCoordinateChange} placeholder="Height" required />
+          <button type="submit">Add Annotation</button>
+        </form>
+
+        <Link to="/">Back</Link>
+      </div>
     </div>
   );
 };

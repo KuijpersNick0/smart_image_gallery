@@ -186,19 +186,25 @@ from urllib.parse import urlparse
 @cross_origin()
 def handle_inference_ViT():
     data = request.get_json()
-    name = data['name']
+    name = data.get('name')
+    if not name:
+        return jsonify({'message': 'You must define a name to run inference'}), 400
+
     label = data['label']
     image_name = data['image_name'] 
     image_name = urlparse(image_name).path.split('/')[-1]
 
     same_cluster_ids = inference(name, label, image_name)
 
+    if not same_cluster_ids:
+        return jsonify({'message': 'No inferences found'}), 200
+
     all_annotations = os.listdir(ANNOTATIONS_FOLDER)
     all_annotations.remove(f'{image_name}.json') 
 
     for id in same_cluster_ids:
         find_annotation_by_id_and_change(all_annotations, id, name)  
-    return jsonify({'message': 'Names updated successfully'}), 200
+    return jsonify({'message': 'Names updated successfully', 'inferences': same_cluster_ids}), 200
 
 if __name__ == "__main__":
     app.run(host='localhost', debug=True, port=8080)

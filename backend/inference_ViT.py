@@ -2,7 +2,6 @@ import json
 import torch
 import torch.optim as optim
 import timm 
-import torch
 from torch import nn, einsum
 import torch.nn.functional as F
 
@@ -39,6 +38,7 @@ from sklearn.decomposition import PCA
 
 from urllib.parse import urlparse
 
+
 # Transformation for image
 transform = transforms.Compose([
     transforms.ToPILImage(),
@@ -48,8 +48,16 @@ transform = transforms.Compose([
 
 def extract_features_from_bbox(image, bbox, model):
     # Assuming image is a numpy array
-    x, y, width, height = bbox["x"], bbox["y"], bbox["width"], bbox["height"]
-    cropped_image = image[y:y + height, x:x + width, :]
+    height, width, _ = image.shape
+    x, y, bbox_width, bbox_height = bbox["x"], bbox["y"], bbox["width"], bbox["height"]
+
+    # Ensure coordinates are positive and within image bounds
+    x = max(0, x)
+    y = max(0, y)
+    bbox_width = min(width - x, bbox_width)
+    bbox_height = min(height - y, bbox_height)
+
+    cropped_image = image[y:y + bbox_height, x:x + bbox_width, :]
     transformed_image = transform(cropped_image)
     # Add batch dimension
     transformed_image = transformed_image.unsqueeze(0)
@@ -83,7 +91,7 @@ def inference(name, label, image_name):
 
     # Create the model (trained)
     model = timm.create_model('deit3_small_patch16_224.fb_in1k', pretrained=True, num_classes = 0)
-    model.load_state_dict(torch.load('weights/model_v3_deit3_small.pth'))
+    model.load_state_dict(torch.load('weights/model_v3_deit3_small.pth', map_location=torch.device('cpu')))
     model.eval()
 
     reference_image = cv2.imread(reference_image_path)  
