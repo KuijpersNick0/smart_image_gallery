@@ -193,8 +193,11 @@ def handle_inference_ViT():
     label = data['label']
     image_name = data['image_name'] 
     image_name = urlparse(image_name).path.split('/')[-1]
-
-    same_cluster_ids = inference(name, label, image_name)
+    
+    try:
+        same_cluster_ids = inference(name, label, image_name)
+    except :
+        return jsonify({'message': 'You must define a name to run inference'}), 400
 
     if not same_cluster_ids:
         return jsonify({'message': 'No inferences found'}), 200
